@@ -1,0 +1,142 @@
+
+@font-face {
+    font-family: 'PTSans-Bold';
+    src: url(fonts/PT_Sans/PTSans-Bold.ttf);
+}
+
+.webPage{
+    background-image: url('images/wood-background.jpg');
+    background-size: stretch;
+    background-repeat: no-repeat;
+    font-family:"PTSans-Bold";
+    color:floralwhite;
+    font-size: 30px;
+    margin: 0;
+    padding: 0;
+
+
+
+
+
+}
+.sectionMenu{
+    width: 40%;
+    margin-left: 30%;
+}
+.menuDiv{
+    text-align: center;
+    background-color: rgb(0, 0, 0, 0.9); 
+    padding: 2px;
+    border: 2px solid  rgb(0, 0, 0, 0.9); 
+    border-radius: 20px;  
+    box-shadow: 5px 10px 50px rgb(0, 0, 0);
+
+}
+.menuDiv:hover{
+    background-color: rgb(0, 0, 0, 0.7);
+    cursor: pointer;
+    border: 2px solid  rgb(0, 0, 0, 0.7);
+}
+
+#startGame{
+    margin-top: 40%;
+    margin-bottom: 10%;
+
+
+}
+#startGame:hover{
+    border: 2px solid white;
+}
+
+#settings:hover{
+    border: 2px solid white;
+}
+/* _______________________________________ */
+/* game html css code */
+*
+{
+    box-sizing: border-box;
+    text-align: center;
+}
+.section1Game{
+    margin-top: 2vh;
+    width: 50vw;
+    margin-left: 25%;
+    font-size:calc(4px + 1vw);;
+    
+    height: 7vh;
+    min-height: 10px;
+    display: flex;
+    flex-direction: row;
+
+}
+.section2Game{
+    width: 50vw;
+    margin-left: 25%;
+    font-size: calc(4px + 1vw);;
+    height: 7vh;
+    min-height: 10px;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 2vh;
+    
+}
+.playerDiv{
+    background-color: chartreuse;
+    width: 20%;
+    height: 7h;
+    padding-top: 1.5vh;
+    border-radius: 10px;
+}
+.playerPiecesDiv{
+    background-color: crimson;
+    text-align: center;
+    width: 80%;
+    height: 7h;
+    padding-top: 1.5vh;
+    border-radius: 10px;
+}
+
+.styleOfBoardAndOptions{
+    height: 80%;
+    width: 58.8235294118vw;
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    margin-left: 25%;
+
+}
+#gameDiv{
+    height: 0;
+    width: 65%;
+    padding-bottom: 65%;
+    background-color: chocolate;
+    min-width: 100px;
+    display: grid;
+    grid-template-columns: repeat(8,auto);
+    grid-template-rows: repeat(8,auto);
+
+    
+    
+    
+}
+.cell{
+    
+    color: black;
+    padding-bottom: 100%;
+
+
+
+    
+}
+
+
+.optionsDiv{
+    background-color: aqua;
+    width: 15%;
+    font-size: 3vw;
+    margin-left: auto;
+    border-radius: 10px;
+    /* 4 section: new game, resign, go back, go forword */
+
+}
