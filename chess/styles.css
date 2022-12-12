@@ -115,20 +115,20 @@
     display: grid;
     grid-template-columns: repeat(8,auto);
     grid-template-rows: repeat(8,auto);
-
-    
-    
-    
 }
-.cell{
-    
+.cell
+{
     color: black;
     padding-bottom: 100%;
 
-
-
-    
 }
+.cell:hover
+{ 
+    border: 5px solid yellow;
+    margin : -5px;
+    z-index: 999;
+}
+
 
 
 .optionsDiv{
