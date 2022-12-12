@@ -122,6 +122,7 @@
     border: none;
     margin: 0px;
     padding-bottom: 100%;
+    --boardIndex: 0;
 }
 .cell:hover
 { 
