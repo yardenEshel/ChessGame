@@ -1,7 +1,6 @@
 
 const container = document.getElementById("gameDiv");
 var chosenCell = null;
-var zOrder = null;
 function populate(size){
     var isWhite =  true;
     for(let i=0;i<size;i++)
@@ -47,28 +46,30 @@ populate(64);
 
 function cellClick()
 {
-    if(chosenCell != this)
+    if(chosenCell != this && chosenCell!= null && chosenCell.style.backgroundImage != '')
     {
-        if(chosenCell != null)
-        {
-            chosenCell.style.zIndex = "0";
-            chosenCell.style.border = "none";
-            chosenCell.style.margin =  "0px";
-            this.style.zIndex = "0";
-        }
-        chosenCell = this;
+        chosenCell.style.zIndex = "0";
+        chosenCell.style.border = "";
+        chosenCell.style.margin =  "0px";
+        this.style.zIndex = "0";
+        this.style.backgroundImage = chosenCell.style.backgroundImage;
+        chosenCell.style.backgroundImage = "";
+        chosenCell = null;
+        
+    }
+    else if(this.style.backgroundImage && chosenCell != this)
+    {
         this.style.border = "5px solid yellow";
         this.style.margin =  "-5px";
-        zOrder = this.style.zIndex;
         this.style.zIndex = "999";
+        chosenCell = this;
     }
     else
     {
         chosenCell = null;
         this.style.zIndex = "0";
         this.style.zIndex = "0";
-        this.style.border = "none";
+        this.style.border = "";
         this.style.margin =  "0px";
-
     }
 }

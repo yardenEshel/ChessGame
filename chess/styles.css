@@ -119,14 +119,15 @@
 .cell
 {
     color: black;
+    border: none;
+    margin: 0px;
     padding-bottom: 100%;
-
 }
 .cell:hover
 { 
-    border: 5px solid yellow;
-    margin : -5px;
-    z-index: 999;
+    border: 5px solid yellow!important;
+    margin : -5px !important;
+    z-index: 999 !important;
 }
 
 
