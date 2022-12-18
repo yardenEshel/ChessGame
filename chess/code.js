@@ -3,6 +3,8 @@ const container = document.getElementById("gameDiv");
 const menu = document.getElementsByClassName("optionsDiv");
 var chosenCell = null;
 var whiteToMove = true;
+var bKingPosition = 59;
+var wKingPostion = 4;
 function populate(size){
     var isWhite =  true;
     for(let i=0;i<size;i++)
@@ -83,24 +85,55 @@ function cellClick()
             else if(backgroundPng.includes('king'))
             {
                 isLegal = kingMoveCheck(chosenCell,this)
+                if(isLegal)
+                {
+                    if(whiteToMove)
+                    {
+                        wKingPostion = parseInt(this.style["--boardIndex"],10);
+                    }
+                    else
+                    {
+                        bKingPosition = parseInt(this.style["--boardIndex"],10);
+                    }
+                }
             }
-            if(isLegal)
+            if(isLegal && checkCheck(parseInt(chosenCell.style["--boardIndex"],10)),parseInt(this.style["--boardIndex"],10))
             {
+
                 this.style.backgroundImage = chosenCell.style.backgroundImage;
                 chosenCell.style.backgroundImage = "";
                 whiteToMove = !whiteToMove;
             }
-            chosenCell = null;
+            else
+            {
+                chosenCell.style.zIndex = "999";
+                chosenCell.style.border = "5px solid red";
+                chosenCell.style.margin =  "-5px";
+                this.style.setProperty("border", "5px solid red","important");
+                this.style.margin =  "-5px";
+                this.style.zIndex = "999";
+                setTimeout(() => {
+                    chosenCell.style.zIndex = "0";
+                    chosenCell.style.border = "";
+                    chosenCell.style.margin =  "0px";
+                    this.style.border = "";
+                    this.style.margin =  "0px";
+                    this.style.zIndex = "0";
+                    chosenCell = null;
+                  }, 400);
+                
+            }
+            
             
         }
         else//reset when a wrongg color has been chosen
         {
             
             chosenCell.style.zIndex = "0";
-            chosenCell.style.zIndex = "0";
             chosenCell.style.border = "";
             chosenCell.style.margin =  "0px";
             chosenCell = null;
+
 
         }
         
@@ -271,4 +304,12 @@ function kingMoveCheck(location, destination)//checks if the king can move or if
         return 1;
     }
     return 0;
+}
+function checkCheck(origin,endin)
+{
+    
+
+
+
+
 }
