@@ -122,7 +122,7 @@
 }
 .cell:hover
 { 
-    border: 5px solid yellow!important;
+    border: 5px solid yellow !important;
     margin : -5px !important;
     z-index: 999 !important;
 }
