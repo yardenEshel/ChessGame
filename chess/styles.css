@@ -138,3 +138,12 @@
     /* 4 section: new game, resign, go back, go forword */
 
 }
+
+#checkMateMsg
+{
+    position: relative;
+    z-index: 1;
+    color: black;
+
+
+}

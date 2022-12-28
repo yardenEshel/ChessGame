@@ -3,8 +3,8 @@ const container = document.getElementById("gameDiv");
 const menu = document.getElementsByClassName("optionsDiv");
 var chosenCell = null;
 var whiteToMove = true;
-var bKingPosition = 59;
-var wKingPostion = 4;
+var isCheck = false;
+var checkMate = false;
 function populate(size){
     var isWhite =  true;
     for(let i=0;i<size;i++)
@@ -51,107 +51,86 @@ populate(64);
 
 function cellClick() 
 {
-    var isLegal = true;
-    if(chosenCell != this && chosenCell!= null && chosenCell.style.backgroundImage != '')//only real pieces can move
+    executeGameOver();
+    if(!checkMate)
     {
-        let backgroundPng = chosenCell.style.backgroundImage;
-
-        if(whiteToMove && backgroundPng.includes('/w_') || !whiteToMove && backgroundPng.includes("/b_"))//one color can move at a time
+        var isLegal = true;
+        if(chosenCell != this && chosenCell!= null && chosenCell.style.backgroundImage != '')//only real pieces can move
         {
-            chosenCell.style.zIndex = "0";
-            chosenCell.style.border = "";
-            chosenCell.style.margin =  "0px";
-            this.style.zIndex = "0";
-            if(backgroundPng.includes('pawn'))
-            {
-                isLegal = pawnMoveCheck(chosenCell,this);
-            }
-            else if(backgroundPng.includes('knight'))
-            {
-                isLegal = knightMoveCheck(chosenCell,this);
-            }
-            else if(backgroundPng.includes('bishop'))
-            {
-                isLegal = bishopMoveCheck(chosenCell,this);
-            }
-            else if(backgroundPng.includes('rook'))
-            {
-                isLegal = rookMoveCheck(chosenCell,this);
-            }
-            else if(backgroundPng.includes('queen'))
-            {
-                isLegal = rookMoveCheck(chosenCell,this) || bishopMoveCheck(chosenCell,this);
-            }
-            else if(backgroundPng.includes('king'))
-            {
-                isLegal = kingMoveCheck(chosenCell,this)
-                if(isLegal)
-                {
-                    if(whiteToMove)
-                    {
-                        wKingPostion = parseInt(this.style["--boardIndex"],10);
-                    }
-                    else
-                    {
-                        bKingPosition = parseInt(this.style["--boardIndex"],10);
-                    }
-                }
-            }
-            if(isLegal && checkCheck(parseInt(chosenCell.style["--boardIndex"],10)),parseInt(this.style["--boardIndex"],10))
-            {
+            let backgroundPng = chosenCell.style.backgroundImage;
 
-                this.style.backgroundImage = chosenCell.style.backgroundImage;
-                chosenCell.style.backgroundImage = "";
-                whiteToMove = !whiteToMove;
-            }
-            else
+            if(whiteToMove && backgroundPng.includes('/w_') || !whiteToMove && backgroundPng.includes("/b_"))//one color can move at a time
             {
-                chosenCell.style.zIndex = "999";
-                chosenCell.style.border = "5px solid red";
-                chosenCell.style.margin =  "-5px";
-                this.style.setProperty("border", "5px solid red","important");
-                this.style.margin =  "-5px";
-                this.style.zIndex = "999";
-                setTimeout(() => {
-                    chosenCell.style.zIndex = "0";
-                    chosenCell.style.border = "";
-                    chosenCell.style.margin =  "0px";
-                    this.style.border = "";
-                    this.style.margin =  "0px";
-                    this.style.zIndex = "0";
-                    chosenCell = null;
-                  }, 400);
+                chosenCell.style.zIndex = "0";
+                chosenCell.style.border = "";
+                chosenCell.style.margin =  "0px";
+                this.style.zIndex = "0";
+                isLegal = pieceFunc(backgroundPng,chosenCell,this);
+                if(isLegal && checkCheck(parseInt(chosenCell.style["--boardIndex"],10),parseInt(this.style["--boardIndex"],10)))
+                {
+                    this.style.backgroundImage = chosenCell.style.backgroundImage;
+                    chosenCell.style.backgroundImage = "";
+                    
+                    if(isCheck)
+                    {
+                        if(isCheckMate())
+                        {
+                            checkMate = true;
+                            executeGameOver();
+                        }
+                        isCheck = false;
+                    }
+
+                    whiteToMove = !whiteToMove;
+                }
+
+                else
+                {
+                    chosenCell.style.zIndex = "999";
+                    chosenCell.style.border = "5px solid red";
+                    chosenCell.style.margin =  "-5px";
+                    this.style.setProperty("border", "5px solid red","important");
+                    this.style.margin =  "-5px";
+                    this.style.zIndex = "999";
+                    setTimeout(() => {
+                        chosenCell.style.zIndex = "0";
+                        chosenCell.style.border = "";
+                        chosenCell.style.margin =  "0px";
+                        this.style.border = "";
+                        this.style.margin =  "0px";
+                        this.style.zIndex = "0";
+                        chosenCell = null;
+                    }, 400);
+                    flag = false;
+                }
+                
                 
             }
-            
+            else//reset when a wrongg color has been chosen
+            {
+                
+                chosenCell.style.zIndex = "0";
+                chosenCell.style.border = "";
+                chosenCell.style.margin =  "0px";
+                chosenCell = null;
+            }
             
         }
-        else//reset when a wrongg color has been chosen
+        else if(this.style.backgroundImage && chosenCell != this)//able to change selection
         {
-            
-            chosenCell.style.zIndex = "0";
-            chosenCell.style.border = "";
-            chosenCell.style.margin =  "0px";
-            chosenCell = null;
-
-
+            this.style.border = "5px solid yellow";
+            this.style.margin =  "-5px";
+            this.style.zIndex = "999";
+            chosenCell = this;
         }
-        
-    }
-    else if(this.style.backgroundImage && chosenCell != this)//able to change selection
-    {
-        this.style.border = "5px solid yellow";
-        this.style.margin =  "-5px";
-        this.style.zIndex = "999";
-        chosenCell = this;
-    }
-    else
-    {
-        chosenCell = null;
-        this.style.zIndex = "0";
-        this.style.zIndex = "0";
-        this.style.border = "";
-        this.style.margin =  "0px";
+        else
+        {
+            chosenCell = null;
+            this.style.zIndex = "0";
+            this.style.zIndex = "0";
+            this.style.border = "";
+            this.style.margin =  "0px";
+        }
     }
 }
 function pawnMoveCheck(location, destination)//checks if the pawn can move or if its and illegal move
@@ -163,20 +142,20 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
     {
          if(position == future - 8 && pieceOnDest == "")// white regular move + checks if there is already someone there
          {
-            return 1;
+            return true;
          }
          else if (position <= 15 && position == future - 16 && pieceOnDest == "" && container.childNodes[position + 8].style.backgroundImage == '')// white double move + checks if there is someone in his way
          {
             
-            return 1;
+            return true;
          }
          else if(pieceOnDest.includes("/b_")&& (position == future - 9 || position == future - 7))// white pawn eat left or right
          {
-            return 1;
+            return true;
          }
          else
          {
-            return 0;
+            return false;
          }
 
     }
@@ -184,19 +163,19 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
     {
         if(position == future + 8 && pieceOnDest == "")
          {
-            return 1;
+            return true;
          }
          else if (position >= 48 && position == future + 16 && pieceOnDest == "" && container.childNodes[position - 8].style.backgroundImage == '')
          {
-            return 1;
+            return true;
          }
-         else if(pieceOnDest.includes("/w_")&& (position == future + 9 || position == future + 7))
+         else if(pieceOnDest.includes("/w_")&& (position == future + 9 || position == future + 7) && destination.style.backgroundColor == location.style.backgroundColor)
          {
-            return 1;
+            return true;
          }
          else
          {
-            return 0;
+            return false;
          }
     }
    
@@ -215,11 +194,11 @@ function knightMoveCheck(location,destination)
 
     if(colorCheck && (moveCheckNegative||moveCheckPositive) && !hacks)
     {
-        return 1;
+        return true;
     }
     else
     {
-        return 0;
+        return false;
     }
 }
 function bishopMoveCheck(location,destination)
@@ -236,24 +215,29 @@ function bishopMoveCheck(location,destination)
         if((future - position) %  9 == 0)
         {
             diagonalAngle = ((future - position)/Math.abs(future-position))*9;
+            
 
         }
         else
         {
             diagonalAngle = ((future - position)/Math.abs(future-position))*7;
         }
+        if(!diagonalAngle)
+            {
+                diagonalAngle = 0;
+            }
         for(let i = position + diagonalAngle; i != future; i+= diagonalAngle)
         {
             if(container.childNodes[i].style.backgroundImage != "")
             {
-                return 0;
+                return false;
             }
         }
-        return 1;
+        return true;
     }
     else
     {
-        return 0;
+        return false;
     }
 }
 function rookMoveCheck(location,destination)
@@ -275,18 +259,22 @@ function rookMoveCheck(location,destination)
         {
             diagonalAngle = ((future - position)/Math.abs(future-position))*8;
         }
+        if(!diagonalAngle)
+        {
+            diagonalAngle = 0;
+        }
         for(let i = position + diagonalAngle; i != future; i+= diagonalAngle)
         {
             if(container.childNodes[i].style.backgroundImage != "")
             {
-                return 0;
+                return false;
             }
         }
-        return 1;
+        return true;
     }
     else
     {
-        return 0;
+        return false;
     }
 }
 
@@ -301,15 +289,170 @@ function kingMoveCheck(location, destination)//checks if the king can move or if
     let sideValid = ((position)/8 | 0) == ((future)/8 | 0) && Math.abs(position - future) == 1;
     if( (updownValid || diagonalValid || sideValid) && colorCheck)
     {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 function checkCheck(origin,endin)
 {
+    let copyCat = container.childNodes;
+    let semi = copyCat[endin].style.backgroundImage;
+    copyCat[endin].style.backgroundImage = copyCat[origin].style.backgroundImage;
+    copyCat[origin].style.backgroundImage = "";
+    let kings = findKing();
+    let isPossible = false;
+    if(kings[0] == 64 || kings[1] == 64)
+    {
+        throw kings;
+    }
+
     
 
+    for(let i = 0; i < 64; i++)
+    {
+        let piece = copyCat[i].style.backgroundImage;
+        if((whiteToMove) && piece != "")
+        {
+            if(piece.includes("/b_"))
+            {
+                whiteToMove = !whiteToMove;
+                isPossible = pieceFunc(piece,copyCat[i],copyCat[kings[0]]);
+                whiteToMove = !whiteToMove;
+            }
+            else
+            {
+                if(pieceFunc(piece, copyCat[i],copyCat[kings[1]])){isCheck = true;}
+            }
+            
+        }
+        else if(!whiteToMove && piece != "")
+        {
+            if(piece.includes("/w_"))
+            {
+                whiteToMove = !whiteToMove;
+                isPossible = pieceFunc(piece,copyCat[i],copyCat[kings[1]]);
+                whiteToMove = !whiteToMove;
+            }
+            else
+            {
+                if(pieceFunc(piece, copyCat[i],copyCat[kings[0]])){isCheck = true;}
+            }
+        }
+        if(isPossible)
+        {
+            copyCat[origin].style.backgroundImage = copyCat[endin].style.backgroundImage;
+            copyCat[endin].style.backgroundImage = semi;
+            return false;
+        }
+    }
+    copyCat[origin].style.backgroundImage = copyCat[endin].style.backgroundImage;
+    copyCat[endin].style.backgroundImage = semi;
+    return true;
 
 
 
+}
+function pieceFunc(backgroundPiece,chosenCell,thisCell)//get what piece wants to move and returnt true if legal
+{
+        if(backgroundPiece.includes('pawn'))
+        {
+            return pawnMoveCheck(chosenCell,thisCell);
+        }
+        else if(backgroundPiece.includes('knight'))
+        {
+            return knightMoveCheck(chosenCell,thisCell);
+        }
+        else if(backgroundPiece.includes('bishop'))
+        {
+           return bishopMoveCheck(chosenCell,thisCell);
+        }
+        else if(backgroundPiece.includes('rook'))
+        {                
+            return rookMoveCheck(chosenCell,thisCell);
+        }
+        else if(backgroundPiece.includes('queen'))
+        {
+            return (rookMoveCheck(chosenCell,thisCell) || bishopMoveCheck(chosenCell,thisCell));
+        }
+        else if(backgroundPiece.includes('king'))
+        {
+            return kingMoveCheck(chosenCell,thisCell);
+        }
+}
+
+function isCheckMate()
+{
+    
+    let isPossible = false;
+    for(let i = 0; i < 64; i++)
+    {
+        if((!whiteToMove && container.childNodes[i].style.backgroundImage.includes('/w_')) || (whiteToMove && container.childNodes[i].style.backgroundImage.includes("/b_")))
+        {
+            for(let j = 0; j < 64; j++)
+            {
+                if(j != i)
+                {
+                    whiteToMove = !whiteToMove;
+                    isPossible = pieceFunc(container.childNodes[i].style.backgroundImage,container.childNodes[i],container.childNodes[j]);
+                    whiteToMove = !whiteToMove;
+                    if(isPossible)
+                    {
+                        try {
+                            whiteToMove = !whiteToMove;
+                            if(checkCheck(i,j))
+                            {
+                                whiteToMove = !whiteToMove;
+                                return false;
+                            }
+                            whiteToMove = !whiteToMove;
+
+
+                        }
+                        catch (error) 
+                        {
+                            let x = 0;
+                        }
+                        
+
+
+                    }
+                    isPossible = false;
+                }
+
+            }
+
+        }
+    }
+    return true;
+}
+
+function findKing()
+{
+    var black = 64;
+    var white = 64;
+    let piece = null;
+    for(let i=0; (black == 64 || white == 64) && i < 64;i++)
+    {
+        piece = container.childNodes[i];
+        if(piece.style.backgroundImage.includes("w_king"))
+        {
+            white = piece.style['--boardIndex'];
+        }
+        if(piece.style.backgroundImage.includes("b_king"))
+        {
+            black = piece.style['--boardIndex'];
+        }
+    }
+    return [white,black];
+}
+function executeGameOver()
+{
+    setTimeout(() => 
+    {
+        const div = document.createElement("div");
+        div.setAttribute("id","checkMateMsg");
+        div.innerHTML = "game over";
+        document.getElementsByClassName("webPage")[0].appendChild(div);
+    }
+    , 0);
 }
