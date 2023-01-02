@@ -5,6 +5,9 @@ var chosenCell = null;
 var whiteToMove = true;
 var isCheck = false;
 var checkMate = false;
+var w_iskingRookMove = false;
+var b_iskingRookMove = false;
+var lastMove = null;
 function populate(size){
     var isWhite =  true;
     for(let i=0;i<size;i++)
@@ -23,26 +26,25 @@ function populate(size){
         }
         if(isWhite)
         {
-            div.style.backgroundColor = ("rgb(0,0,0)");
+            div.style.backgroundColor = ("rgb(0,0,0,0.5)");
         }
         else
         {
-            div.style.backgroundColor = ("#ffff");
+            div.style.backgroundColor = ("rgb(255,255,255,0.5)");
         }
-        
         isWhite = !isWhite;
         container.appendChild(div);
-        
-        
-
-
     }
-    const startList = ["rook","knight","bishop","queen","king","bishop","knight","rook","pawn","pawn","pawn","pawn","pawn","pawn","pawn","pawn"];
+    let kq = false;
+    const startList = ["rook","knight","bishop","king","queen","bishop","knight","rook","pawn","pawn","pawn","pawn","pawn","pawn","pawn","pawn"];
     for(let i = 0;i < 16;i++)
     {
         container.childNodes[i].style.backgroundImage = "url('images/chess-pieces/w_"+ startList[i] +"_2x.png')";
         container.childNodes[size-1-i].style.backgroundImage = "url('images/chess-pieces/b_"+ startList[i] +"_2x.png')";
     }
+    let tempo = container.childNodes[60].style.backgroundImage;
+    container.childNodes[60].style.backgroundImage = container.childNodes[59].style.backgroundImage;
+    container.childNodes[59].style.backgroundImage = tempo;
 
 }
 
@@ -51,7 +53,6 @@ populate(64);
 
 function cellClick() 
 {
-    executeGameOver();
     if(!checkMate)
     {
         var isLegal = true;
@@ -68,9 +69,18 @@ function cellClick()
                 isLegal = pieceFunc(backgroundPng,chosenCell,this);
                 if(isLegal && checkCheck(parseInt(chosenCell.style["--boardIndex"],10),parseInt(this.style["--boardIndex"],10)))
                 {
+                    let text = backgroundPng.indexOf("_");
+                    lastMove = [whiteToMove,backgroundPng.slice(text+1,backgroundPng.indexOf("_",text+1)),parseInt(this.style["--boardIndex"])];
                     this.style.backgroundImage = chosenCell.style.backgroundImage;
                     chosenCell.style.backgroundImage = "";
-                    
+                    if((backgroundPng.includes("w_king")||backgroundPng.includes("w_rook"))&& w_iskingRookMove == false)
+                    {
+                        w_iskingRookMove = true;
+                    }
+                    if((backgroundPng.includes("b_king")||backgroundPng.includes("b_rook"))&& b_iskingRookMove == false)
+                    {
+                        b_iskingRookMove = true;
+                    }
                     if(isCheck)
                     {
                         if(isCheckMate())
@@ -153,6 +163,15 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
          {
             return true;
          }
+         else if(lastMove == null)
+         {
+            return false;
+         }
+         else if((position == future - 9 || position == future - 7) && JSON.stringify(lastMove) == JSON.stringify([false,"pawn",future - 8]))
+        {
+            container.childNodes[lastMove[2]].style.backgroundImage = "";
+            return true;
+        }
          else
          {
             return false;
@@ -171,6 +190,15 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
          }
          else if(pieceOnDest.includes("/w_")&& (position == future + 9 || position == future + 7) && destination.style.backgroundColor == location.style.backgroundColor)
          {
+            return true;
+         }
+         else if(lastMove == null)
+         {
+            return false;
+         }
+         else if((position == future + 9 || position == future + 7) && JSON.stringify(lastMove) == JSON.stringify([true,"pawn",future + 8]))
+         {
+            container.childNodes[lastMove[2]].style.backgroundImage = "";
             return true;
          }
          else
@@ -287,9 +315,14 @@ function kingMoveCheck(location, destination)//checks if the king can move or if
     let colorCheck = (whiteToMove && pieceOnDest.includes('/b_') || !whiteToMove && pieceOnDest.includes("/w_") || pieceOnDest == "")
     let diagonalValid = (Math.abs(position - future) == 7 || Math.abs(position - future) == 9) && destination.style.backgroundColor == location.style.backgroundColor;
     let sideValid = ((position)/8 | 0) == ((future)/8 | 0) && Math.abs(position - future) == 1;
+
     if( (updownValid || diagonalValid || sideValid) && colorCheck)
     {
         return true;
+    }
+    else if(position == future - 2|| position == future + 2)
+    {
+        return castleCheck(position,future);
     }
     return false;
 }
@@ -455,4 +488,30 @@ function executeGameOver()
         document.getElementsByClassName("webPage")[0].appendChild(div);
     }
     , 0);
+}
+function castleCheck(current,future)
+{
+    if(w_iskingRookMove && b_iskingRookMove)
+    {
+        return false
+    }
+    let i = 0;
+    let counter = future - current;//checks if the way is clear for castling, and if none of the cells is threatened
+    let difference = counter/Math.abs(counter);
+    let pieces = container.childNodes;
+    for(i = current + difference; i != 7 && i > 0 && i < 63 && i != 56 ; i += difference)
+    {
+        if(pieces[i].style.backgroundImage != ""  )
+        {
+            return false;
+        }
+        
+    }
+    if(!checkCheck(current,current + difference) || !checkCheck(current,current + 2*difference))
+    {
+        return false;
+    }
+    pieces[future - difference].style.backgroundImage = pieces[i].style.backgroundImage;
+    pieces[i].style.backgroundImage = "";
+    return true;
 }
