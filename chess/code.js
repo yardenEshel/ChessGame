@@ -1,13 +1,17 @@
 
-const container = document.getElementById("gameDiv");
-const menu = document.getElementsByClassName("optionsDiv");
+const container = document.getElementById("gameDiv");//board
+const menu = document.getElementsByClassName("optionsDiv");//menu
+const whole = document.getElementById("message");//queening window
+const pl = document.getElementsByClassName("pieceLost");//pieces lost div
 var chosenCell = null;
 var whiteToMove = true;
 var isCheck = false;
 var checkMate = false;
 var w_iskingRookMove = false;
 var b_iskingRookMove = false;
-var lastMove = null;
+var lastMove = [null,null,null,null,null,null];
+var boardEnd = false;
+var freeze = false;
 function populate(size){
     var isWhite =  true;
     for(let i=0;i<size;i++)
@@ -45,6 +49,7 @@ function populate(size){
     let tempo = container.childNodes[60].style.backgroundImage;
     container.childNodes[60].style.backgroundImage = container.childNodes[59].style.backgroundImage;
     container.childNodes[59].style.backgroundImage = tempo;
+    piecesLostDivCreator()
 
 }
 
@@ -53,7 +58,8 @@ populate(64);
 
 function cellClick() 
 {
-    if(!checkMate)
+    lastMove[5] = null;
+    if(!checkMate || freeze)
     {
         var isLegal = true;
         if(chosenCell != this && chosenCell!= null && chosenCell.style.backgroundImage != '')//only real pieces can move
@@ -69,8 +75,13 @@ function cellClick()
                 isLegal = pieceFunc(backgroundPng,chosenCell,this);
                 if(isLegal && checkCheck(parseInt(chosenCell.style["--boardIndex"],10),parseInt(this.style["--boardIndex"],10)))
                 {
-                    let text = backgroundPng.indexOf("_");
-                    lastMove = [whiteToMove,backgroundPng.slice(text+1,backgroundPng.indexOf("_",text+1)),parseInt(this.style["--boardIndex"])];
+                    lastMoveMaker(chosenCell,this)//update last move.
+                    if(boardEnd && (parseInt(chosenCell.style["--boardIndex"],10)>47 ||parseInt(chosenCell.style["--boardIndex"],10)<16))//pawn reached last row?
+                    {
+                        freeze = true;//cant touch anything. only after choosing a piece to replace pawn.
+                        queening();
+                    }
+                    boardEnd = false;
                     this.style.backgroundImage = chosenCell.style.backgroundImage;
                     chosenCell.style.backgroundImage = "";
                     if((backgroundPng.includes("w_king")||backgroundPng.includes("w_rook"))&& w_iskingRookMove == false)
@@ -143,7 +154,7 @@ function cellClick()
         }
     }
 }
-function pawnMoveCheck(location, destination)//checks if the pawn can move or if its and illegal move
+function pawnMoveCheck(location, destination)//validate pawn's movement + if reached the end of the board
 {
     let position = parseInt(location.style["--boardIndex"],10);
     let future = parseInt(destination.style["--boardIndex"],10);
@@ -152,6 +163,11 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
     {
          if(position == future - 8 && pieceOnDest == "")// white regular move + checks if there is already someone there
          {
+            if(future>55)
+            {
+                boardEnd = true;
+                lastMove[5] = 4;
+            }
             return true;
          }
          else if (position <= 15 && position == future - 16 && pieceOnDest == "" && container.childNodes[position + 8].style.backgroundImage == '')// white double move + checks if there is someone in his way
@@ -163,15 +179,16 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
          {
             return true;
          }
-         else if(lastMove == null)
+         else if(lastMove[0] == null)
          {
             return false;
          }
-         else if((position == future - 9 || position == future - 7) && JSON.stringify(lastMove) == JSON.stringify([false,"pawn",future - 8]))
-        {
+         else if((position == future - 9 || position == future - 7) && JSON.stringify(lastMove.slice(0,3)) == JSON.stringify([false,"pawn",future - 8])&& future<48)
+         {
             container.childNodes[lastMove[2]].style.backgroundImage = "";
+            lastMove[5] = 1
             return true;
-        }
+         }
          else
          {
             return false;
@@ -182,6 +199,11 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
     {
         if(position == future + 8 && pieceOnDest == "")
          {
+            if(future<8)
+            {
+                boardEnd = true;
+                lastMove[5] = 4;
+            }
             return true;
          }
          else if (position >= 48 && position == future + 16 && pieceOnDest == "" && container.childNodes[position - 8].style.backgroundImage == '')
@@ -192,13 +214,14 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
          {
             return true;
          }
-         else if(lastMove == null)
+         else if(lastMove[0] == null)
          {
             return false;
          }
-         else if((position == future + 9 || position == future + 7) && JSON.stringify(lastMove) == JSON.stringify([true,"pawn",future + 8]))
+         else if((position == future + 9 || position == future + 7) && JSON.stringify(lastMove.slice(0,3)) == JSON.stringify([true,"pawn",future + 8])&& future>15)
          {
             container.childNodes[lastMove[2]].style.backgroundImage = "";
+            lastMove[5] = 1
             return true;
          }
          else
@@ -208,7 +231,7 @@ function pawnMoveCheck(location, destination)//checks if the pawn can move or if
     }
    
 }
-function knightMoveCheck(location,destination)
+function knightMoveCheck(location,destination)//validate knight's movement
 {
     let position = parseInt(location.style["--boardIndex"],10);
     let future = parseInt(destination.style["--boardIndex"],10);
@@ -229,7 +252,7 @@ function knightMoveCheck(location,destination)
         return false;
     }
 }
-function bishopMoveCheck(location,destination)
+function bishopMoveCheck(location,destination)//validate bishops's movement
 {
     let position = parseInt(location.style["--boardIndex"],10);// location in number/64
     let future = parseInt(destination.style["--boardIndex"],10);// destination in number/64
@@ -268,7 +291,7 @@ function bishopMoveCheck(location,destination)
         return false;
     }
 }
-function rookMoveCheck(location,destination)
+function rookMoveCheck(location,destination)//validate rook's movement
 {
     let position = parseInt(location.style["--boardIndex"],10);// location in number/64
     let future = parseInt(destination.style["--boardIndex"],10);// destination in number/64
@@ -305,7 +328,6 @@ function rookMoveCheck(location,destination)
         return false;
     }
 }
-
 function kingMoveCheck(location, destination)//checks if the king can move or if its an illegal move
 {
     let position = parseInt(location.style["--boardIndex"],10);
@@ -326,7 +348,7 @@ function kingMoveCheck(location, destination)//checks if the king can move or if
     }
     return false;
 }
-function checkCheck(origin,endin)
+function checkCheck(origin,endin)//checks: 1 - if your king is in check, 2- if the opponent king is in check
 {
     let copyCat = container.childNodes;
     let semi = copyCat[endin].style.backgroundImage;
@@ -412,8 +434,7 @@ function pieceFunc(backgroundPiece,chosenCell,thisCell)//get what piece wants to
             return kingMoveCheck(chosenCell,thisCell);
         }
 }
-
-function isCheckMate()
+function isCheckMate()//checks if any king is in checkmate.
 {
     
     let isPossible = false;
@@ -458,8 +479,7 @@ function isCheckMate()
     }
     return true;
 }
-
-function findKing()
+function findKing()//finds postion of both kings in any given time
 {
     var black = 64;
     var white = 64;
@@ -478,18 +498,13 @@ function findKing()
     }
     return [white,black];
 }
-function executeGameOver()
+function executeGameOver()// creating div for "game over"
 {
-    setTimeout(() => 
-    {
-        const div = document.createElement("div");
-        div.setAttribute("id","checkMateMsg");
-        div.innerHTML = "game over";
-        document.getElementsByClassName("webPage")[0].appendChild(div);
-    }
-    , 0);
+    
+    const gameOverMsg= document.getElementById("checkmate");
+    gameOverMsg.style.visibility = "visible";
 }
-function castleCheck(current,future)
+function castleCheck(current,future)//checks if castling is possible + moves the rook(the king will move later)
 {
     if(w_iskingRookMove && b_iskingRookMove)
     {
@@ -513,5 +528,79 @@ function castleCheck(current,future)
     }
     pieces[future - difference].style.backgroundImage = pieces[i].style.backgroundImage;
     pieces[i].style.backgroundImage = "";
+    if(0<(future - difference))
+    {
+        lastMove[5] = 3;//queen side
+    }
+    else{
+        lastMove[5] = 2;//king side
+    }
+    
     return true;
+}
+function queening()//creating small div aside the board for which the player chooses a piece to replace the pawn.
+{
+    const menuPawn = document.getElementsByClassName("askPiece");
+    
+    let cap = "w";
+    if(!whiteToMove){cap = "b";}
+    let queeningList = ["queen","knight","bishop","rook"];
+    for(let i = 0;i<4;i++)
+    {
+        menuPawn[i].style.backgroundImage = "url('images/chess-pieces/"+cap+"_"+ queeningList[i] +"_2x.png')";
+        menuPawn[i].addEventListener("click",pieceChosen);
+    }
+    whole.style.visibility = "visible";
+    
+}
+function pieceChosen()//applying changes when pawn reaches board's end.
+{
+    whole.style.visibility = "hidden";
+    freeze = false;
+    container.childNodes[lastMove[2]].style.backgroundImage = this.style.backgroundImage;
+}
+function lastMoveMaker(loc,dest)//last move - list - [color that moved,piece that moved,to where,from where, piece that was eaten/null,spaciel moves(en passant - 1,castle - 2 - KINGside/3 - QUEENside,queenin - 4)]
+{
+    let color = whiteToMove;//color that moved
+    let piece1 = loc.style.backgroundImage;
+    piece1 = piece1.slice(piece1.indexOf("_")+1,piece1.indexOf("_",piece1.indexOf("_")+1));//piece that moved
+    let to = parseInt(dest.style["--boardIndex"],10);//to where
+    let from = parseInt(loc.style["--boardIndex"],10);//from where
+    let eatenPiece = null;
+    if(dest.style.backgroundImage != "")
+    {
+        eatenPiece = dest.style.backgroundImage;
+        eatenPiece = eatenPiece.slice(eatenPiece.indexOf("_")+1,eatenPiece.indexOf("_",eatenPiece.indexOf("_")+1));//eaten piece or null
+    }
+    if(lastMove[5] == 1)
+    {
+        eatenPiece ="pawn";
+    }
+    if(eatenPiece != "" && eatenPiece != null)
+    {
+        addPieceLost(color,eatenPiece);
+    }
+    lastMove = [color,piece1,to,from,eatenPiece,lastMove[5]];
+
+
+}
+function piecesLostDivCreator()//creates a div, which shows all lost pieces
+{
+    let lostList = ["queen","knight","bishop","rook","pawn"];
+    for(let i = 0;i<5;i++)
+    {
+        pl[i+5].style.backgroundImage = "url('images/chess-pieces/w_"+ lostList[i] +"_2x.png')";
+        pl[i].style.backgroundImage = "url('images/chess-pieces/b_"+ lostList[i] +"_2x.png')";
+    }
+}
+function addPieceLost(color,pieceToAdd)
+{
+    let lostList = ["queen","knight","bishop","rook","pawn"];
+    let temp = 0;
+    if(color != true)
+    {
+        temp = 5;
+    }
+    pl[lostList.indexOf(pieceToAdd)+ temp].innerHTML = parseInt(pl[lostList.indexOf(pieceToAdd) + temp].innerHTML)+1;
+
 }

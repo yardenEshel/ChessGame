@@ -10,11 +10,28 @@
     </head>
     <body body class = "webPage">
         <section class="section1Game">
-            <div class="playerDiv">player 1/+-</div>
-            <div class="playerPiecesDiv">player 1 pieces lost</div>
+            <div class="playerDiv">player 1</div>
+            <div class="playerPiecesDiv">
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+            </div>
         </section>
         <div class="styleOfBoardAndOptions">
             <div id="gameDiv"></div>
+            <div class = "menuDiv" id = "message">
+                <div div  class="askPiece"></div>
+                <div div  class="askPiece"></div>
+                <div div  class="askPiece"></div>
+                <div div  class="askPiece"></div>
+            </div>
+            <div class = "menuDiv" id = "checkmate">
+                <span id="close" style="margin-right: 80%; cursor:pointer;" onclick="this.parentNode.style.visibility = 'hidden';return false;">X</span> 
+                <br>  checkmate!</div>
+            
+
             <div class="optionsDiv">
                 <div class="menuDiv" id="restartDiv" onclick = "document.location = 'game.html'"> </div>
                 <div class="menuDiv" id="homeDiv" onclick = "document.location = 'gui.html'"> </div>
@@ -23,8 +40,14 @@
             </div>
         </div>
         <section class="section2Game">
-            <div class="playerDiv">player 2/+-</div>
-            <div class="playerPiecesDiv">player 2 pieces lost</div>
+            <div class="playerDiv">player 2</div>
+            <div class="playerPiecesDiv">
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+                <div class="pieceLost">0</div>
+            </div>
         </section>   
         <script type="text/javascript" src="code.js"></script>
     </body>
